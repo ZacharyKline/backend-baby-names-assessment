@@ -15,6 +15,9 @@ import re
 import argparse
 
 """
+Finished with some help from Stu
+
+
 Define the extract_names() function below and change main()
 to call it.
 
@@ -38,20 +41,39 @@ Suggested milestones for incremental development:
  -Fix main() to use the extract_names list
 """
 
-
+# Okay so I need to get the year, then the baby name in alphabetical order, then the ranking of the name.
+# Maybe use a for loop to go through the file content and find each thing I need?
 def extract_names(filename):
     """
     Given a file name for baby.html, returns a list starting with the year string
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    solution = []
+    names = ''
+    popularity = ''
+    names_dict = {}
+    f = open(filename, 'rU')
+    text = f.read()
+    year = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+    babe_name = re.findall(r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text)
+    for names in babe_name:
+        rank, boy, girl = names
+        if boy not in names_dict:
+            names_dict[boy] = rank
+        if girl not in names_dict:
+            names_dict[girl] = rank
+    sorted_names = sorted(names_dict)
+
+    for names in sorted_names:
+        solution.append('{} {}'.format(names, names_dict[names]))
+    solution.insert(0, year.group(1))
+    return solution
 
 
 def create_parser():
     """Create a cmd line parser object with 2 argument definitions"""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Search for the most popular baby name rankings in each year')
     parser.add_argument(
         '--summaryfile', help='creates a summary file', action='store_true')
     # The nargs option instructs the parser to expect 1 or more filenames.
@@ -69,14 +91,21 @@ def main():
         sys.exit(1)
 
     file_list = args.files
-
-    # option flag
     create_summary = args.summaryfile
 
+    if create_summary:
+        for filename in file_list:
+            years = extract_names(filename)
+            print_out = '\n'.join(years)+'\n'
+            with open(filename + '.summary', 'w') as f:
+                f.write(print_out)
+    else:
+        for filename in file_list:
+            years = extract_names(filename)
+            print(years)
+    # option flag
     # +++your code here+++
     # For each filename, get the names, then either print the text output
     # or write it to a summary file
-
-
 if __name__ == '__main__':
     main()
